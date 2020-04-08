@@ -136,14 +136,24 @@ def get_movie_info_from_title(url):
      'Cast1': 'Ben Schwartz',
      'Cast2': 'James Marsden',
      'Cast3': 'Jim Carrey',
-     'Cast4': 'Tika Sumpter'}
+     'Cast4': 'Tika Sumpter',
+     'Director': 'Jeff Fowler',
+     'Writer': 'Patrick Casey',
+     'Producer': 'Toby Asher',
+     'Cinematographer': 'Stephen F. Windon'}
     ]
     
     '''
 
     headers = ['Movie_Title', 'Domestic_Distributor', 'Domestic_Total_Gross',
-               'Runtime', 'Rating', 'Release_Date', 'Budget', 'Cast1', 'Cast2', 'Cast3', 'Cast4']
+               'Runtime', 'Rating', 'Release_Date', 'Budget',
+               'Cast1', 'Cast2', 'Cast3', 'Cast4',
+               'Director', 'Writer', 'Producer', 'Cinematographer']
     movie_data = []
+    director = None
+    writer = None
+    producer = None
+    cinematographer = None
 
     response = requests.get(url)
     print(response.status_code, ' ', url)
@@ -199,6 +209,26 @@ def get_movie_info_from_title(url):
         cast4 = castInfo[4].text.split('\n')[0]
     else: cast4 = None
 
+    # Get Crew info
+    crewInfo = soup.find(id="principalCrew").find_all('tr')
+    if crewInfo is not None:
+        for crew in crewInfo[1:]:
+            crew_member = crew.find('td').text.split('\n')[0]
+            role = crew.find('td').find_next('td').text
+            
+            if director is None:
+                if role == 'Director':
+                    director = crew_member
+            if writer == None:
+                if role == 'Writer':
+                    writer = crew_member
+            if producer == None:
+                if role == 'Producer':
+                    producer = crew_member
+            if cinematographer == None:
+                if role == 'Cinematographer':
+                    cinematographer = crew_member
+
     movie_dict = dict(zip(headers, [title,
                                     distributor,
                                     domestic_total_gross,
@@ -209,7 +239,11 @@ def get_movie_info_from_title(url):
                                     cast1,
                                     cast2,
                                     cast3,
-                                    cast4]))
+                                    cast4,
+                                    director,
+                                    writer,
+                                    producer,
+                                    cinematographer]))
 
     movie_data.append(movie_dict)
     return movie_data
