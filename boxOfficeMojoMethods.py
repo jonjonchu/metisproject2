@@ -40,16 +40,18 @@ def get_dataframe_from_year(year, num_releases=-1):
     for release_suffix in release_urls:
         # Transform release url to title url
         release_url = website + release_suffix
-        title_id = get_title_url_from_release(release_url)
-        if title_id is not None:
-            title_url = website + title_id + title_url_suffix
+        try:
+            title_id = get_title_url_from_release(release_url)
+            if title_id is not None:
+                title_url = website + title_id + title_url_suffix
 
-            time.sleep(1)
-            # Obtain Movie data
-            data = get_movie_info_from_title(title_url)
-            df = df.append(data)
-            print('dataframe shape: ', df.shape)
-            time.sleep(1)
+                time.sleep(1)
+                # Obtain Movie data
+                data = get_movie_info_from_title(title_url)
+                df = df.append(data)
+                print('dataframe shape: ', df.shape)
+                time.sleep(1)
+        except: pass
 
     df = df.reset_index()
     return df
@@ -210,8 +212,8 @@ def get_movie_info_from_title(url):
     else: cast4 = None
 
     # Get Crew info
-    crewInfo = soup.find(id="principalCrew").find_all('tr')
-    if crewInfo is not None:
+    if soup.find(id="principalCrew") is not None:
+        crewInfo = soup.find(id="principalCrew").find_all('tr')
         for crew in crewInfo[1:]:
             crew_member = crew.find('td').text.split('\n')[0]
             role = crew.find('td').find_next('td').text
